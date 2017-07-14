@@ -1,0 +1,153 @@
+<html>
+<head>
+  <title>Login</title>
+  <meta charset="UTF-8">
+  <style>
+    *{margin:0px;}
+    button{
+      padding:5px;
+      border:1px solid #aaa;
+      border-radius: 5px;
+      background:#dedede;
+      color:#333;
+      margin: 0px 5px;
+    }
+    .mainbar{
+      padding:5px;
+      background: #eee;
+    }
+    .mainbar:after{
+      display: block;
+      content:" ";
+      clear:both;
+    }
+    .mainbar #user img{
+      width:25px;
+      float:left;
+      border-radius:50%;
+    }
+    ul{
+      margin:0px;
+      padding: 0px;
+    }
+    ul li{
+      margin:6px 19px;
+      list-style: none;
+    }
+    ul li button{
+      width:150px;
+      color:white;
+      padding:10px;
+    }
+    ul li button.google{
+      background: #f2561c;
+      border: 1px solid #f22f37;
+    }
+    ul li button.facebook{
+      background: #284baa;
+      border: 1px solid #2517aa;
+    }
+    ul li button.twitter{
+      background: #3fc3f2;
+      border: 1px solid #29d5f2;
+    }
+    ul li button:hover{
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mainbar">
+    <p id="user"></p>
+    <button id="logout">Cerrar sesión</button>
+</div>
+
+<ul class="social">
+  <li>
+    <button data-provider="google" class="google button-login">
+      Google
+    </button>
+  </li>
+  <li>
+    <button data-provider="facebook" class="facebook button-login">
+      Facebook
+    </button>
+  </li>
+  <li>
+    <button data-provider="twitter" class="twitter button-login">
+      Twitter
+    </button>
+  </li>
+</ul>
+
+
+<script src="https://www.gstatic.com/firebasejs/3.6.8/firebase.js" ></script>
+
+<script>
+  /*CAMBIAR EL VALOR PARA PROBAR*/
+  const config = {
+    apiKey            : "APIKEY",
+    authDomain        : "DOMAIN.firebaseapp.com",
+    databaseURL       : "https://DOMAIN.firebaseio.com",
+    storageBucket     : "DOMAIN.appspot.com",
+    messagingSenderId : "MESSAGEID"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<script>
+  (function () {
+    "use strict";
+
+    let providers = {
+      'google'    : new firebase.auth.GoogleAuthProvider(),
+      'facebook'  : new firebase.auth.FacebookAuthProvider(),
+      'twitter'   : new firebase.auth.TwitterAuthProvider()
+    };
+
+    let buttons = document.getElementsByClassName('button-login');
+    for(let i = 0; i< buttons.length; i++){
+      buttons[i].addEventListener("click", (e)=>{
+        let provider_selected = e.srcElement.getAttribute('data-provider');
+        doLogin( providers[provider_selected] );
+      })
+    }
+
+    firebase.auth().onAuthStateChanged( user => {
+      if (user) {
+        let img = document.createElement('img');
+        img.src = user.photoURL;
+        img.id = "picture";
+        document.getElementById("user").appendChild(img);
+        document.getElementById("logout").style.display="block";
+      }else{
+        document.getElementById("logout").style.display="none";
+      }
+    });
+
+    document.getElementById("logout").addEventListener("click", logout);
+
+    function logout(){
+      firebase
+        .auth()
+        .signOut()
+        .then( ()=> {
+          document.getElementById("picture").remove();
+        });
+    }
+
+    function doLogin(provider) {
+      firebase
+        .auth()
+        .signInWithPopup(provider)
+        .then( result =>  {
+          console.log(result.user);
+        }).catch(function(error) {
+        console.error(error.code);
+      });
+    }
+  })();
+</script>
+</body>
+</html>
